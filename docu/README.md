@@ -1,4 +1,4 @@
-### QEMU
+## QEMU
 
 #### Building from source
 
@@ -23,7 +23,7 @@ qemu-system-aarch64 -m 4096M -cpu cortex-a57 -M virt  \
 ```
 
 #### Alpine
-- Download the latest aarch64 image (here)[https://alpinelinux.org/downloads].
+- Download the latest aarch64 image [here](https://alpinelinux.org/downloads).
 - Create a qcow2 disk.
 ```
 qemu-img create -f qcow2 alpine.qcow2 8G
@@ -34,7 +34,7 @@ truncate -s 64m efi.img
 truncate -s 64m varstore.img
 dd if=/usr/share/edk2/aarch64/QEMU_EFI.fd of=efi.img conv=notrunc
 ```
-or using source compiled bios (I could make it working [se](#running-qemu-with-bios-option))
+or using source compiled bios (I could make it working [see](#running-qemu-with-bios-option))
 ```
 truncate -s 64m efi.img
 truncate -s 64m varstore.img
@@ -51,11 +51,11 @@ qemu-system-aarch64 -nographic -machine virt,gic-version=max -m 2G -cpu max -smp
 
 ### GNS3
 
-(GNS3)[https://docs.gns3.com/docs/] allows to use qemu images as devices (great!)
+[GNS3](https://docs.gns3.com/docs/) allows to use qemu images as devices (great!)
 
 ### NS3
 
-(NS3 Tap Bridge)[https://www.nsnam.org/docs/release/3.10/doxygen/group___tap_bridge_model.html]
+[NS3 Tap Bridge](https://www.nsnam.org/docs/release/3.10/doxygen/group___tap_bridge_model.html)
 
 To setup the Tap Bridge (`scripts/create_tap.sh`,`scripts/destroy_tap.sh`):
 ```
