@@ -1,53 +1,3 @@
-## QEMU
-
-#### Building from source
-
-- Configure and compile.
-```
-./configure --target-list=aarch64-softmmu
-make -j 8
-```
-!!! Note: we want to compile qemu from source to steal `qemu/build/pc-bios/edk2-x86_64-code.fd`
-so check that it has been generated
-
-#### Running qemu with bios option
-
-Using self created alpine image:
-```
-qemu-system-aarch64 -m 4096M -cpu cortex-a57 -M virt  \                 
-        -bios $QEMU_SRC/build/pc-bios/edk2-aarch64-code.fd -serial telnet::4444,server -nographic \
-        -drive if=none,file=alpine-prebaked.qcow2,id=hd0 \
-        -device virtio-blk-device,drive=hd0 \
-        -device virtio-net-device,netdev=net0 \
-        -netdev user,id=net0
-```
-
-#### Alpine
-- Download the latest aarch64 image [here](https://alpinelinux.org/downloads).
-- Create a qcow2 disk.
-```
-qemu-img create -f qcow2 alpine.qcow2 8G
-```
-- Proceed to create a UEFI firmware image for arm64 architecture using QEMU's provided tools.
-```
-truncate -s 64m efi.img
-truncate -s 64m varstore.img
-dd if=/usr/share/edk2/aarch64/QEMU_EFI.fd of=efi.img conv=notrunc
-```
-or using source compiled bios (I could make it working [see](#running-qemu-with-bios-option))
-```
-truncate -s 64m efi.img
-truncate -s 64m varstore.img
-dd if=$QEMU_SRC/build/pc-bios/edk2-x86_64-code.fd of=efi.img conv=notrunc
-```
-- Launch the installation
-```
-qemu-system-aarch64 -nographic -machine virt,gic-version=max -m 2G -cpu max -smp 2 \
--drive file=efi.img,if=pflash,format=raw \
--drive file=varstore.img,if=pflash,format=raw \
--drive file=alpine.qcow2,if=virtio,format=qcow2 \ 
--cdrom alpine.iso
-```
 
 ### GNS3
 
@@ -101,7 +51,7 @@ Start the QEMU with flags
 
 Inside the VM 
 ```
-ip addr add 10.0.0.101 dev eth0
+ip addr add 10.0.0.1\24 dev eth0
 ```
 
 To run ns3
@@ -233,6 +183,20 @@ round-trip min/avg/max = 23.3/26.5/30.6 ms
 ```
 !!! the max value in almost all the tests is given by the first ping
 As we can see introducing a fixed delay minimum and average rrt are closer.
+
+### Timing
+
+https://access.redhat.com/documentation/it-it/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/chap-kvm_guest_timing_management
+
+http://courses.csail.mit.edu/6.852/01/papers/VirtTime_GlobState.pdf
+
+https://naoki-tanaka.com/pubs/ZNJT_JOS12.pdf
+
+file:///home/xgampx/Downloads/A_Comparison_of_Two_Approaches_to_Parallel_Simulat.pdf
+
+file:///home/xgampx/Downloads/concurrency00.pdf
+
+http://cobweb.cs.uga.edu/~maria/pads/papers/p404-jefferson.pdf
 
 
 ### Useful links
