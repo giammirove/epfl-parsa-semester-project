@@ -16,11 +16,12 @@ sudo ip link set tap$i promisc on up;
 # ns3
 sudo ip tuntap add mode tap tap$i-ns;
 sudo ip addr add 0.0.0.0 dev tap$i-ns;
-sudo ip addr add 0.0.0.0 dev tap$i-ns;
 sudo ip link set dev tap$i-ns master br$i;
 sudo ip link set tap$i-ns promisc on up;
 
 sudo ip link set dev br$i up
 
-echo "allow br$i" | sudo tee -a /etc/qemu/bridge.conf
+
+echo 'Remember to do, if not already done'
+echo "echo \"allow br$i\" | sudo tee -a /etc/qemu/bridge.conf"
 

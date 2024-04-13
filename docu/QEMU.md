@@ -173,6 +173,16 @@ can’t provide accurate timer on multi core platform. And QEMU can’t provide 
 ```
 Even though it is just a comment, it is to be considered while evaluating possibilities
 
+| SMP | CORES | TARGET     | 1. QEMU ADD  | 1. MY ADD  | 1. FLAGS      | 2. QEMU ADD | 2. MY ADD  | 2. FLAGS                           |
+|-----|-------|------------|--------------|------------|---------------|-------------|------------|------------------------------------|
+| 64  | 1     | 1232203923 | 1232203881   | 1232203923 | -rtc clock=vm | 1232203922  | 1232203923 | -icount shift=0,sleep=on,align=off |
+| 64  | 8     | 1232203923 | 1232203894   | 1232203923 | -rtc clock=vm | 1232203922  | 1232203923 | -icount shift=0,sleep=on,align=off |
+| 64  | 16    | 1232203923 | 1232203872   | 1232203923 | -rtc clock=vm | 1232203922  | 1232203923 | -icount shift=0,sleep=on,align=off |
+| 128 | 1     | 1232203923 | 1232203923   | 1232203936 | -rtc clock=vm | 1232203922  | 1232203923 | -icount shift=0,sleep=on,align=off |
+| 128 | 8     | 1232203923 | 1232203926*  | 1232203940 | -rtc clock=vm | 1232203922  | 1232203923 | -icount shift=0,sleep=on,align=off |
+| 128 | 16    | 1232203923 | 1232203920   | 1232203930 | -rtc clock=vm | 1232203922  | 1232203923 | -icount shift=0,sleep=on,align=off |
+
+
 #### Timers
 
 In QEMU there are 4 timers (see [timers.h](https://github.com/qemu/qemu/blob/v4.2.0/include/qemu/timer.h#L16)):
@@ -408,4 +418,35 @@ Virtual Time and Global States of Distributed Systems [[2]](http://courses.csail
 - formally defined system of lattices (with proofs)
 - definition of concept of time (based on 5 axioms)
 
+### Network Manipulation
+
+To connect to host server use :
+```
+# 10.0.0.1 is hardcoded in afterboot script 
+sudo ip addr del 10.0.0.1/24 dev br0
+```
+
+Interesting abstractions:
+```
+static ssize_t virtio_net_do_receive(NetClientState *nc, const uint8_t *buf,
+                                  size_t size)
+```
+1536 is the size of an Ethernet packet and it is contained in the `buf` variable
+
+Note: the quanta can not be too small, otherwise the OS will trigger warnings.
+```
+rcu_sched kthread starved for 1273 jiffies! g497 f0x0 RCU_GP_WAIT_FQS(5) ->state=0x0 ->cpu=23
+rcu: 	Unless rcu_sched kthread gets sufficient CPU time, OOM is now expected behavior.
+```
+at some point it could happend that one machine is very slow, causing all the nodes
+to run very slow, therefore a dynamic QUANTA is desiderable in those situations
+!!! we stop the execution of the vm blocking qemu to execute new instructions, but 
+all the timers continue, so we should also stop all of them.
+
+
+Qemu documentation:
+```
+Once you've shut down QEMU, you can examine the dump.dat file with tools like Wireshark. Please note that network traffic dumping can only work if QEMU has a chance to see the network packets, i.e. this does not work if you use virtio-net with vhost acceleration in the kernel.
+```
+Ergo we can not use hardware acceleration (or we can but then we need to modify the kernel)
 
